@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ACS Master Box Attendance System</title>
+    <!-- Tailwind CSS for utility-first styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500;700&display=swap');
+
+        :root {
+            --neon-green: #00ff41;
+            --dark-bg: #0d0d0d;
+            --card-bg: #1a1a1a;
+            --sidebar-width: 260px;
+        }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background-color: var(--dark-bg);
+            color: #e0e0e0;
+            overflow-x: hidden;
+        }
+
+        .cyber-header {
+            font-family: 'Orbitron', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--neon-green);
+            text-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+        }
+
+        .glass-panel {
+            background: rgba(26, 26, 26, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 255, 65, 0.2);
+            border-radius: 8px;
+        }
+
+        .sidebar {
+            width: var(--sidebar-width);
+            transition: transform 0.3s ease;
+        }
+
+        .nav-item {
+            transition: all 0.2s;
+            border-left: 4px solid transparent;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background: rgba(0, 255, 65, 0.1);
+            border-left: 4px solid var(--neon-green);
+            color: var(--neon-green);
+        }
+
+        input, select {
+            background: #262626 !important;
+            border: 1px solid #444 !important;
+            color: white !important;
+        }
+
+        input:focus {
+            border-color: var(--neon-green) !important;
+            outline: none;
+            box-shadow: 0 0 5px rgba(0, 255, 65, 0.5);
+        }
+
+        .btn-cyber {
+            background: var(--neon-green);
+            color: black;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .btn-cyber:hover {
+            box-shadow: 0 0 15px var(--neon-green);
+            transform: translateY(-1px);
+        }
+
+        .btn-outline-cyber {
+            border: 1px solid var(--neon-green);
+            color: var(--neon-green);
+            transition: 0.3s;
+        }
+
+        .btn-outline-cyber:hover {
+            background: var(--neon-green);
+            color: black;
+        }
+
+        /* Custom Checkbox Style */
+        .cyber-checkbox {
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #555;
+            border-radius: 4px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .cyber-checkbox:checked {
+            background-color: var(--neon-green);
+            border-color: var(--neon-green);
+        }
+
+        .cyber-checkbox:checked::after {
+            content: '✓';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: black;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        #login-screen {
+            background: linear-gradient(135deg, #0d0d0d 0%, #1a1a1a 100%);
+            z-index: 1000;
+        }
+
+        .hide { display: none !important; }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                z-index: 50;
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 0 !important;
+            }
+        }
+    </style>
+</head>
+<body class="flex min-h-screen">
+
+    <!-- LOGIN SCREEN -->
+    <div id="login-screen" class="fixed inset-0 flex items-center justify-center p-4">
+        <div class="glass-panel w-full max-w-md p-8 text-center">
+            <img id="login-logo" src="" alt="ACS Logo" class="mx-auto mb-6 h-12">
+            <h2 class="cyber-header text-2xl mb-8">Access Authorized Only</h2>
+            <div class="space-y-4">
+                <input type="text" id="username" placeholder="Username" class="w-full p-3 rounded">
+                <input type="password" id="password" placeholder="Password" class="w-full p-3 rounded">
+                <button onclick="handleLogin()" class="btn-cyber w-full py-3 rounded uppercase tracking-widest mt-4">Initialize Login</button>
+                <p id="login-error" class="text-red-500 mt-2 hide">Invalid Credentials</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN APP STRUCTURE -->
+    <div id="app-container" class="flex w-full hide">
+        
+        <!-- Sidebar -->
+        <aside id="sidebar" class="sidebar fixed inset-y-0 left-0 glass-panel flex flex-col">
+            <div class="p-6 border-b border-gray-800 flex items-center justify-between">
+                <img id="nav-logo" src="" alt="ACS Logo" class="h-8">
+                <button onclick="toggleSidebar()" class="md:hidden text-white"><i data-lucide="x"></i></button>
+            </div>
+            
+            <!-- Group Selector -->
+            <div class="p-4 border-b border-gray-800">
+                <label class="text-xs uppercase text-gray-500 mb-2 block">Active Messenger Box</label>
+                <select id="active-group-select" onchange="changeGroup(this.value)" class="w-full p-2 text-sm rounded bg-transparent border-gray-700">
+                    <!-- Dynamic Groups -->
+                </select>
+            </div>
+
+            <nav class="flex-1 mt-4">
+                <a href="#" onclick="showView('dashboard')" class="nav-item flex items-center px-6 py-4" id="nav-dashboard">
+                    <i data-lucide="layout-dashboard" class="mr-3 w-5 h-5"></i> Dashboard
+                </a>
+                <a href="#" onclick="showView('groups')" class="nav-item flex items-center px-6 py-4" id="nav-groups">
+                    <i data-lucide="users" class="mr-3 w-5 h-5"></i> Messenger Boxes
+                </a>
+                <a href="#" onclick="showView('members')" class="nav-item flex items-center px-6 py-4" id="nav-members">
+                    <i data-lucide="user-plus" class="mr-3 w-5 h-5"></i> Member Roster
+                </a>
+                <a href="#" onclick="showView('attendance')" class="nav-item flex items-center px-6 py-4" id="nav-attendance">
+                    <i data-lucide="clipboard-check" class="mr-3 w-5 h-5"></i> Mark Attendance
+                </a>
+                <a href="#" onclick="showView('reports')" class="nav-item flex items-center px-6 py-4" id="nav-reports">
+                    <i data-lucide="bar-chart-3" class="mr-3 w-5 h-5"></i> Data Reports
+                </a>
+                <a href="#" onclick="showView('settings')" class="nav-item flex items-center px-6 py-4" id="nav-settings">
+                    <i data-lucide="settings" class="mr-3 w-5 h-5"></i> System Settings
+                </a>
+            </nav>
+
+            <div class="p-4 border-t border-gray-800">
+                <button onclick="handleLogout()" class="flex items-center text-red-400 hover:text-red-300 w-full px-2">
+                    <i data-lucide="log-out" class="mr-3 w-5 h-5"></i> Terminate Session
+                </button>
+            </div>
+        </aside>
+
+        <!-- Content Area -->
+        <main class="flex-1 main-content ml-0 md:ml-[260px] p-4 md:p-8">
+            <header class="flex justify-between items-center mb-8">
+                <div>
+                    <button onclick="toggleSidebar()" class="md:hidden text-white mr-4"><i data-lucide="menu"></i></button>
+                    <h1 id="view-title" class="cyber-header text-3xl">Dashboard</h1>
+                </div>
+                <div class="text-right">
+                    <p id="current-date-display" class="text-neon-green font-bold"></p>
+                    <p id="active-group-label" class="text-xs text-gray-400"></p>
+                </div>
+            </header>
+
+            <!-- Dashboard View -->
+            <section id="view-dashboard" class="app-view">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="glass-panel p-6 border-l-4 border-l-blue-500">
+                        <p class="text-gray-400 uppercase text-xs">Total Members</p>
+                        <h3 id="stat-total-members" class="text-4xl font-bold mt-2">0</h3>
+                    </div>
+                    <div class="glass-panel p-6 border-l-4 border-l-green-500">
+                        <p class="text-gray-400 uppercase text-xs">Present Today</p>
+                        <h3 id="stat-present-today" class="text-4xl font-bold mt-2 text-green-400">0</h3>
+                    </div>
+                    <div class="glass-panel p-6 border-l-4 border-l-red-500">
+                        <p class="text-gray-400 uppercase text-xs">Absent Today</p>
+                        <h3 id="stat-absent-today" class="text-4xl font-bold mt-2 text-red-400">0</h3>
+                    </div>
+                </div>
+
+                <div class="mt-8 glass-panel p-6">
+                    <h3 class="cyber-header mb-4">Quick Summary</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead class="text-gray-500 text-sm uppercase border-b border-gray-800">
+                                <tr>
+                                    <th class="py-3 px-2">Group</th>
+                                    <th class="py-3 px-2">Strength</th>
+                                    <th class="py-3 px-2">Today's Entry</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dash-summary-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Groups View -->
+            <section id="view-groups" class="app-view hide">
+                <div class="glass-panel p-6 max-w-2xl">
+                    <h3 class="cyber-header mb-6">Create New Messenger Box</h3>
+                    <div class="flex gap-4">
+                        <input type="text" id="new-group-name" placeholder="Box Name (e.g. Team Gamma)" class="flex-1 p-3 rounded">
+                        <button onclick="addGroup()" class="btn-cyber px-8 rounded">CREATE</button>
+                    </div>
+                </div>
+
+                <div class="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="groups-list">
+                    <!-- Dynamic Group Cards -->
+                </div>
+            </section>
+
+            <!-- Members View -->
+            <section id="view-members" class="app-view hide">
+                <div class="flex flex-col md:flex-row gap-6 mb-8">
+                    <div class="glass-panel p-6 flex-1">
+                        <h3 class="cyber-header mb-4">Add Member to <span class="active-box-name"></span></h3>
+                        <div class="flex gap-4">
+                            <input type="text" id="member-name" placeholder="Full Name" class="flex-1 p-3 rounded">
+                            <button onclick="addMember()" class="btn-cyber px-8 rounded uppercase">Add</button>
+                        </div>
+                    </div>
+                    <div class="glass-panel p-6 w-full md:w-1/3">
+                        <h3 class="cyber-header mb-4 text-sm">Search Roster</h3>
+                        <input type="text" id="search-member" onkeyup="renderMembers()" placeholder="Type to filter..." class="w-full p-3 rounded">
+                    </div>
+                </div>
+
+                <div class="glass-panel overflow-hidden">
+                    <table class="w-full text-left">
+                        <thead class="bg-black/40 text-gray-400 uppercase text-xs">
+                            <tr>
+                                <th class="p-4 w-16">SN</th>
+                                <th class="p-4">Member Name</th>
+                                <th class="p-4 text-right">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="members-table-body"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Attendance View -->
+            <section id="view-attendance" class="app-view hide">
+                <div class="glass-panel p-6 mb-8 flex flex-wrap gap-6 items-end">
+                    <div>
+                        <label class="block text-gray-500 text-xs mb-2 uppercase">Select Date</label>
+                        <input type="date" id="attendance-date" class="p-3 rounded w-full">
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="cyber-header text-sm">Target Box: <span class="active-box-name text-white"></span></h3>
+                    </div>
+                    <button onclick="saveAttendance()" class="btn-cyber px-10 py-3 rounded">SAVE ATTENDANCE</button>
+                </div>
+
+                <div class="glass-panel overflow-hidden">
+                    <table class="w-full text-left">
+                        <thead class="bg-black/40 text-gray-400 uppercase text-xs">
+                            <tr>
+                                <th class="p-4 w-16 text-center">SN</th>
+                                <th class="p-4">Member Name</th>
+                                <th class="p-4 w-32 text-center">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="attendance-table-body"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Reports View -->
+            <section id="view-reports" class="app-view hide">
+                <div class="glass-panel p-6 mb-8 flex items-center justify-between">
+                    <div>
+                        <h3 class="cyber-header">Attendance Insights</h3>
+                        <p class="text-xs text-gray-400 uppercase">Analysis for <span class="active-box-name"></span></p>
+                    </div>
+                    <button onclick="exportReport()" class="btn-outline-cyber px-4 py-2 rounded flex items-center">
+                        <i data-lucide="download" class="mr-2 w-4 h-4"></i> Export Data
+                    </button>
+                </div>
+
+                <div class="glass-panel overflow-hidden">
+                    <table class="w-full text-left">
+                        <thead class="bg-black/40 text-gray-400 uppercase text-xs">
+                            <tr>
+                                <th class="p-4 w-16">SN</th>
+                                <th class="p-4">Name</th>
+                                <th class="p-4 text-center">Total Present</th>
+                                <th class="p-4 text-center">Total Absent</th>
+                                <th class="p-4 text-center">Attendance %</th>
+                                <th class="p-4">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reports-table-body"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Settings View -->
+            <section id="view-settings" class="app-view hide">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="glass-panel p-8 border-l-4 border-l-red-600">
+                        <h3 class="text-xl font-bold text-red-500 mb-4 flex items-center">
+                            <i data-lucide="alert-triangle" class="mr-2"></i> Nuclear Reset
+                        </h3>
+                        <p class="text-gray-400 mb-6">This will wipe ALL groups, members, and attendance records from local storage. This action cannot be undone.</p>
+                        <button onclick="confirmReset()" class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded w-full">RESET ALL DATA</button>
+                    </div>
+
+                    <div class="glass-panel p-8">
+                        <h3 class="text-xl font-bold text-blue-400 mb-4 flex items-center">
+                            <i data-lucide="info" class="mr-2"></i> System Info
+                        </h3>
+                        <div class="space-y-4 text-sm">
+                            <div class="flex justify-between border-b border-gray-800 pb-2">
+                                <span class="text-gray-500">App Name</span>
+                                <span>ACS Master Box</span>
+                            </div>
+                            <div class="flex justify-between border-b border-gray-800 pb-2">
+                                <span class="text-gray-500">Version</span>
+                                <span>v2.4.0 (Cyber Core)</span>
+                            </div>
+                            <div class="flex justify-between border-b border-gray-800 pb-2">
+                                <span class="text-gray-500">Storage Engine</span>
+                                <span>localStorage (Browser)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <div id="modal-container" class="fixed inset-0 bg-black/80 z-[2000] items-center justify-center hide">
+        <div class="glass-panel p-8 max-w-sm w-full text-center">
+            <i data-lucide="alert-circle" class="mx-auto w-12 h-12 text-red-500 mb-4"></i>
+            <h4 class="text-xl font-bold mb-2">Are you sure?</h4>
+            <p class="text-gray-400 mb-8" id="modal-msg"></p>
+            <div class="flex gap-4">
+                <button onclick="closeModal()" class="flex-1 py-2 rounded bg-gray-700">Cancel</button>
+                <button id="modal-confirm-btn" class="flex-1 py-2 rounded bg-red-600 font-bold">Yes, Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // CONFIGURATION
+        const LOGO_URL = "https://via.placeholder.com/150x50?text=ACS+TEAM";
+        const CREDENTIALS = { user: 'admin', pass: '12345' };
+
+        // INITIAL STATE
+        let appState = {
+            groups: [], // Array of group names
+            members: {}, // { groupName: [ {id, name} ] }
+            attendance: {}, // { groupName: { date: { memberId: status } } }
+            activeGroup: '',
+            currentUser: null
+        };
+
+        // DOM LOAD
+        window.onload = () => {
+            initApp();
+            lucide.createIcons();
+            document.getElementById('login-logo').src = LOGO_URL;
+            document.getElementById('nav-logo').src = LOGO_URL;
+            document.getElementById('attendance-date').valueAsDate = new Date();
+            updateClock();
+            setInterval(updateClock, 1000);
+        };
+
+        function initApp() {
+            const saved = localStorage.getItem('acs_master_data');
+            if (saved) {
+                appState = JSON.parse(saved);
+            } else {
+                // Default setup
+                appState.groups = ['Master Box ACS'];
+                appState.members['Master Box ACS'] = [];
+                appState.attendance['Master Box ACS'] = {};
+                saveData();
+            }
+
+            if (sessionStorage.getItem('acs_session')) {
+                appState.currentUser = 'admin';
+                document.getElementById('login-screen').classList.add('hide');
+                document.getElementById('app-container').classList.remove('hide');
+                if (!appState.activeGroup && appState.groups.length > 0) {
+                    appState.activeGroup = appState.groups[0];
+                }
+                refreshUI();
+            }
+        }
+
+        // --- AUTH LOGIC ---
+        function handleLogin() {
+            const u = document.getElementById('username').value;
+            const p = document.getElementById('password').value;
+            const error = document.getElementById('login-error');
+
+            if (u === CREDENTIALS.user && p === CREDENTIALS.pass) {
+                sessionStorage.setItem('acs_session', 'active');
+                appState.currentUser = u;
+                document.getElementById('login-screen').classList.add('hide');
+                document.getElementById('app-container').classList.remove('hide');
+                if (!appState.activeGroup) appState.activeGroup = appState.groups[0];
+                refreshUI();
+                error.classList.add('hide');
+            } else {
+                error.classList.remove('hide');
+            }
+        }
+
+        function handleLogout() {
+            sessionStorage.removeItem('acs_session');
+            window.location.reload();
+        }
+
+        // --- CORE DATA OPERATIONS ---
+        function saveData() {
+            localStorage.setItem('acs_master_data', JSON.stringify(appState));
+        }
+
+        function refreshUI() {
+            renderGroupSelects();
+            renderMembers();
+            renderAttendance();
+            renderDashboard();
+            renderReports();
+            renderGroupsView();
+            
+            // Update UI Labels
+            const boxLabels = document.querySelectorAll('.active-box-name');
+            boxLabels.forEach(el => el.textContent = appState.activeGroup || 'None');
+            document.getElementById('active-group-label').textContent = appState.activeGroup || 'NO BOX SELECTED';
+            
+            lucide.createIcons();
+        }
+
+        // --- GROUP MANAGEMENT ---
+        function addGroup() {
+            const name = document.getElementById('new-group-name').value.trim();
+            if (!name) return;
+            if (appState.groups.includes(name)) {
+                alert("Group already exists!");
+                return;
+            }
+            appState.groups.push(name);
+            appState.members[name] = [];
+            appState.attendance[name] = {};
+            appState.activeGroup = name;
+            document.getElementById('new-group-name').value = '';
+            saveData();
+            refreshUI();
+        }
+
+        function changeGroup(name) {
+            appState.activeGroup = name;
+            saveData();
+            refreshUI();
+        }
+
+        function deleteGroup(name) {
+            showModal(`Delete group "${name}" and all its records?`, () => {
+                appState.groups = appState.groups.filter(g => g !== name);
+                delete appState.members[name];
+                delete appState.attendance[name];
+                if (appState.activeGroup === name) {
+                    appState.activeGroup = appState.groups[0] || '';
+                }
+                saveData();
+                refreshUI();
+                closeModal();
+            });
+        }
+
+        // --- MEMBER MANAGEMENT ---
+        function addMember() {
+            const nameInput = document.getElementById('member-name');
+            const name = nameInput.value.trim();
+            if (!name || !appState.activeGroup) return;
+
+            const groupMembers = appState.members[appState.activeGroup];
+            const nextId = groupMembers.length > 0 ? Math.max(...groupMembers.map(m => m.id)) + 1 : 1;
+            
+            groupMembers.push({ id: nextId, name: name });
+            nameInput.value = '';
+            saveData();
+            refreshUI();
+        }
+
+        function deleteMember(id) {
+            if (!appState.activeGroup) return;
+            appState.members[appState.activeGroup] = appState.members[appState.activeGroup].filter(m => m.id !== id);
+            saveData();
+            refreshUI();
+        }
+
+        // --- ATTENDANCE MANAGEMENT ---
+        function saveAttendance() {
+            const date = document.getElementById('attendance-date').value;
+            if (!date || !appState.activeGroup) return;
+
+            const records = {};
+            const checkboxes = document.querySelectorAll('.att-check');
+            checkboxes.forEach(cb => {
+                records[cb.dataset.id] = cb.checked ? 'present' : 'absent';
+            });
+
+            if (!appState.attendance[appState.activeGroup]) {
+                appState.attendance[appState.activeGroup] = {};
+            }
+            appState.attendance[appState.activeGroup][date] = records;
+            
+            saveData();
+            alert("Attendance recorded for " + date);
+            refreshUI();
+        }
+
+        // --- RENDERERS ---
+        function showView(viewId) {
+            document.querySelectorAll('.app-view').forEach(v => v.classList.add('hide'));
+            document.querySelectorAll('.nav-item').forEach(v => v.classList.remove('active'));
+            
+            document.getElementById(`view-${viewId}`).classList.remove('hide');
+            document.getElementById(`nav-${viewId}`).classList.add('active');
+            
+            const titles = {
+                dashboard: 'System Overview',
+                groups: 'Box Architecture',
+                members: 'Member Roster',
+                attendance: 'Access Log',
+                reports: 'Analytical Data',
+                settings: 'System Protocol'
+            };
+            document.getElementById('view-title').textContent = titles[viewId];
+            
+            if (window.innerWidth < 768) toggleSidebar(false);
+            refreshUI();
+        }
+
+        function renderGroupSelects() {
+            const select = document.getElementById('active-group-select');
+            select.innerHTML = appState.groups.map(g => 
+                `<option value="${g}" ${g === appState.activeGroup ? 'selected' : ''}>${g}</option>`
+            ).join('');
+        }
+
+        function renderGroupsView() {
+            const list = document.getElementById('groups-list');
+            list.innerHTML = appState.groups.map(g => `
+                <div class="glass-panel p-6 border-t-2 ${g === appState.activeGroup ? 'border-neon-green' : 'border-gray-700'}">
+                    <div class="flex justify-between items-start mb-4">
+                        <h4 class="font-bold text-lg">${g}</h4>
+                        <button onclick="deleteGroup('${g}')" class="text-red-500 hover:text-red-400"><i data-lucide="trash-2"></i></button>
+                    </div>
+                    <div class="text-sm text-gray-500 mb-4">
+                        ${appState.members[g]?.length || 0} Members Enrolled
+                    </div>
+                    <button onclick="changeGroup('${g}')" class="w-full py-2 rounded text-xs uppercase tracking-widest ${g === appState.activeGroup ? 'bg-green-900/40 text-neon-green cursor-default' : 'bg-gray-800 hover:bg-gray-700'}">
+                        ${g === appState.activeGroup ? 'Active' : 'Select'}
+                    </button>
+                </div>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        function renderMembers() {
+            const tbody = document.getElementById('members-table-body');
+            const search = document.getElementById('search-member').value.toLowerCase();
+            
+            if (!appState.activeGroup) {
+                tbody.innerHTML = '<tr><td colspan="3" class="p-8 text-center text-gray-500">No box selected.</td></tr>';
+                return;
+            }
+
+            const members = appState.members[appState.activeGroup] || [];
+            const filtered = members.filter(m => m.name.toLowerCase().includes(search));
+
+            tbody.innerHTML = filtered.map((m, idx) => `
+                <tr class="border-b border-gray-800/50 hover:bg-white/5">
+                    <td class="p-4 font-mono text-gray-500">${idx + 1}</td>
+                    <td class="p-4 font-medium">${m.name}</td>
+                    <td class="p-4 text-right">
+                        <button onclick="deleteMember(${m.id})" class="p-2 text-red-500 hover:bg-red-500/10 rounded">
+                            <i data-lucide="user-minus" class="w-4 h-4"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+            if (filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3" class="p-8 text-center text-gray-500">No members found.</td></tr>';
+            }
+            lucide.createIcons();
+        }
+
+        function renderAttendance() {
+            const tbody = document.getElementById('attendance-table-body');
+            const date = document.getElementById('attendance-date').value;
+            
+            if (!appState.activeGroup) return;
+
+            const members = appState.members[appState.activeGroup] || [];
+            const dayRecords = (appState.attendance[appState.activeGroup] || {})[date] || {};
+
+            tbody.innerHTML = members.map((m, idx) => {
+                const status = dayRecords[m.id] || 'absent';
+                const isPresent = status === 'present';
+                return `
+                    <tr class="border-b border-gray-800 hover:bg-white/5">
+                        <td class="p-4 text-center font-mono text-gray-600">${idx + 1}</td>
+                        <td class="p-4">${m.name}</td>
+                        <td class="p-4 text-center">
+                            <input type="checkbox" data-id="${m.id}" class="att-check cyber-checkbox" ${isPresent ? 'checked' : ''}>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+            
+            if (members.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3" class="p-8 text-center text-gray-500">No members to mark.</td></tr>';
+            }
+        }
+
+        function renderDashboard() {
+            if (!appState.activeGroup) return;
+
+            const members = appState.members[appState.activeGroup] || [];
+            const today = new Date().toISOString().split('T')[0];
+            const todayAttendance = (appState.attendance[appState.activeGroup] || {})[today] || {};
+
+            let presentCount = 0;
+            Object.values(todayAttendance).forEach(v => { if (v === 'present') presentCount++; });
+
+            document.getElementById('stat-total-members').textContent = members.length;
+            document.getElementById('stat-present-today').textContent = presentCount;
+            document.getElementById('stat-absent-today').textContent = members.length - presentCount;
+
+            // Summary Table
+            const summaryBody = document.getElementById('dash-summary-body');
+            summaryBody.innerHTML = appState.groups.map(g => {
+                const mCount = appState.members[g]?.length || 0;
+                const hasEntry = (appState.attendance[g] || {})[today] ? '<span class="text-green-500">Completed</span>' : '<span class="text-red-500">Pending</span>';
+                return `
+                    <tr class="border-b border-gray-800">
+                        <td class="py-4 px-2 font-bold">${g}</td>
+                        <td class="py-4 px-2">${mCount} Members</td>
+                        <td class="py-4 px-2 text-xs uppercase">${hasEntry}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function renderReports() {
+            const tbody = document.getElementById('reports-table-body');
+            if (!appState.activeGroup) return;
+
+            const members = appState.members[appState.activeGroup] || [];
+            const allAttendance = appState.attendance[appState.activeGroup] || {};
+            const dates = Object.keys(allAttendance);
+
+            tbody.innerHTML = members.map((m, idx) => {
+                let p = 0;
+                let a = 0;
+                
+                dates.forEach(d => {
+                    const status = allAttendance[d][m.id];
+                    if (status === 'present') p++;
+                    else if (status === 'absent') a++;
+                });
+
+                const total = p + a;
+                const percent = total > 0 ? ((p / total) * 100).toFixed(1) : '0.0';
+                const statusClass = percent > 75 ? 'text-green-500' : (percent > 40 ? 'text-yellow-500' : 'text-red-500');
+
+                return `
+                    <tr class="border-b border-gray-800 hover:bg-white/5">
+                        <td class="p-4 font-mono text-gray-600">${idx + 1}</td>
+                        <td class="p-4 font-bold">${m.name}</td>
+                        <td class="p-4 text-center text-green-400">${p}</td>
+                        <td class="p-4 text-center text-red-400">${a}</td>
+                        <td class="p-4 text-center ${statusClass}">${percent}%</td>
+                        <td class="p-4">
+                            <div class="w-full bg-gray-800 rounded-full h-1.5">
+                                <div class="bg-neon-green h-1.5 rounded-full" style="width: ${percent}%"></div>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // --- SYSTEM UTILS ---
+        function updateClock() {
+            const now = new Date();
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('current-date-display').textContent = now.toLocaleDateString(undefined, options);
+        }
+
+        function toggleSidebar(force) {
+            const sb = document.getElementById('sidebar');
+            if (force !== undefined) {
+                force ? sb.classList.add('open') : sb.classList.remove('open');
+            } else {
+                sb.classList.toggle('open');
+            }
+        }
+
+        function showModal(msg, confirmAction) {
+            const modal = document.getElementById('modal-container');
+            document.getElementById('modal-msg').textContent = msg;
+            const btn = document.getElementById('modal-confirm-btn');
+            
+            // Clear existing listeners
+            const newBtn = btn.cloneNode(true);
+            btn.parentNode.replaceChild(newBtn, btn);
+            
+            newBtn.onclick = confirmAction;
+            modal.classList.remove('hide');
+            modal.classList.add('flex');
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('modal-container');
+            modal.classList.add('hide');
+            modal.classList.remove('flex');
+        }
+
+        function confirmReset() {
+            showModal("This will completely destroy all data stored in this system. Type 'YES' to confirm.", () => {
+                localStorage.clear();
+                window.location.reload();
+            });
+            // Overriding the modal button for safety
+            document.getElementById('modal-confirm-btn').textContent = "ERASE EVERYTHING";
+        }
+
+        function exportReport() {
+            if (!appState.activeGroup) return;
+            const data = JSON.stringify(appState, null, 2);
+            const blob = new Blob([data], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `ACS_Backup_${appState.activeGroup}_${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+        }
+    </script>
+</body>
+</html>

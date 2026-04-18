@@ -16,15 +16,51 @@
 
         :root {
             --neon-green: #00ff41;
-            --dark-bg: #0d0d0d;
-            --card-bg: #1a1a1a;
             --sidebar-width: 280px;
+        }
+
+        /* Dark Mode Colors (Default) */
+        body.dark {
+            background-color: #0d0d0d;
+            color: #e0e0e0;
+        }
+        body.dark .glass-panel {
+            background: rgba(26, 26, 26, 0.8);
+            border: 1px solid rgba(0, 255, 65, 0.2);
+        }
+        body.dark input, body.dark select {
+            background: #262626 !important;
+            border: 1px solid #444 !important;
+            color: white !important;
+        }
+
+        /* Light Mode Colors */
+        body.light {
+            background-color: #f3f4f6;
+            color: #1f2937;
+        }
+        body.light .glass-panel {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        body.light .sidebar {
+            background: white;
+            border-right: 1px solid #ddd;
+        }
+        body.light input, body.light select {
+            background: #ffffff !important;
+            border: 1px solid #ccc !important;
+            color: #1f2937 !important;
+        }
+        body.light .nav-item:hover, body.light .nav-item.active {
+            background: rgba(0, 255, 65, 0.1);
+            color: #059669;
         }
 
         body {
             font-family: 'Rajdhani', sans-serif;
-            background-color: var(--dark-bg);
-            color: #e0e0e0;
+            transition: background-color 0.3s, color 0.3s;
             overflow-x: hidden;
         }
 
@@ -33,14 +69,7 @@
             text-transform: uppercase;
             letter-spacing: 2px;
             color: var(--neon-green);
-            text-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
-        }
-
-        .glass-panel {
-            background: rgba(26, 26, 26, 0.8);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(0, 255, 65, 0.2);
-            border-radius: 8px;
+            text-shadow: 0 0 10px rgba(0, 255, 65, 0.3);
         }
 
         .sidebar {
@@ -55,21 +84,8 @@
         }
 
         .nav-item:hover, .nav-item.active {
-            background: rgba(0, 255, 65, 0.1);
             border-left: 4px solid var(--neon-green);
             color: var(--neon-green);
-        }
-
-        input, select {
-            background: #262626 !important;
-            border: 1px solid #444 !important;
-            color: white !important;
-        }
-
-        input:focus {
-            border-color: var(--neon-green) !important;
-            outline: none;
-            box-shadow: 0 0 5px rgba(0, 255, 65, 0.5);
         }
 
         .btn-cyber {
@@ -101,13 +117,9 @@
 
         .cyber-checkbox:checked::after {
             content: '✓';
-            position: absolute;
-            top: 50%;
-            left: 50%;
+            position: absolute; top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            color: black;
-            font-weight: bold;
-            font-size: 16px;
+            color: black; font-weight: bold; font-size: 16px;
         }
 
         .hide { display: none !important; }
@@ -115,7 +127,7 @@
         .credit-text {
             font-size: 0.7rem;
             letter-spacing: 1px;
-            color: #666;
+            color: #888;
             text-align: center;
         }
 
@@ -124,13 +136,13 @@
             .sidebar.open { transform: translateX(0); }
             .main-content { margin-left: 0 !important; width: 100%; }
             .sidebar-overlay { 
-                position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 90; display: none;
+                position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 90; display: none;
             }
             .sidebar-overlay.show { display: block; }
         }
     </style>
 </head>
-<body class="flex min-h-screen">
+<body class="dark flex min-h-screen">
 
     <div id="sidebar-overlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
 
@@ -147,7 +159,7 @@
                 <input type="password" id="password" placeholder="Enter password" class="w-full p-3 rounded">
                 <button id="login-submit-btn" class="btn-cyber w-full py-3 rounded uppercase tracking-widest mt-4">Initialize Login</button>
                 <p id="login-error" class="text-red-500 mt-2 hide text-center">Access Denied: Invalid Credentials</p>
-                <p id="db-error" class="text-yellow-500 mt-2 text-xs hide text-center">Connection Error: Check Database Rules</p>
+                <p id="db-error" class="text-yellow-500 mt-2 text-xs hide text-center">Database Sync Error</p>
             </div>
             <div class="mt-8 border-t border-gray-800 pt-4">
                 <p class="credit-text uppercase">Designed & Developed by Albert Virelian</p>
@@ -161,7 +173,12 @@
         <aside id="sidebar" class="sidebar fixed inset-y-0 left-0 glass-panel flex flex-col">
             <div class="p-6 border-b border-gray-800 flex items-center justify-between">
                 <img src="https://i.postimg.cc/9RMsd1Lf/logo.png" alt="ACS Logo" class="h-8">
-                <button onclick="toggleSidebar()" class="md:hidden text-white"><i data-lucide="x"></i></button>
+                <div class="flex items-center gap-2">
+                    <button onclick="toggleTheme()" class="p-2 hover:bg-gray-700/30 rounded-full transition text-neon-green">
+                        <i id="theme-icon" data-lucide="moon"></i>
+                    </button>
+                    <button onclick="toggleSidebar()" class="md:hidden text-gray-400"><i data-lucide="x"></i></button>
+                </div>
             </div>
             
             <div class="p-4 border-b border-gray-800">
@@ -195,7 +212,7 @@
                     <p class="credit-text uppercase">Designed & Developed by Albert Virelian</p>
                     <p class="credit-text text-neon-green/50">With love for Team ACS</p>
                 </div>
-                <button onclick="handleLogout()" class="flex items-center text-red-400 hover:text-red-300 w-full px-2">
+                <button onclick="handleLogout()" class="flex items-center text-red-400 hover:text-red-300 w-full px-2 text-sm font-bold uppercase tracking-tighter">
                     <i data-lucide="log-out" class="mr-3 w-5 h-5"></i> Terminate Session
                 </button>
             </div>
@@ -204,12 +221,12 @@
         <main class="flex-1 main-content ml-0 md:ml-[280px] p-4 md:p-8">
             <header class="flex justify-between items-center mb-8">
                 <div class="flex items-center">
-                    <button onclick="toggleSidebar()" class="md:hidden text-white mr-4 p-2 glass-panel"><i data-lucide="menu"></i></button>
+                    <button onclick="toggleSidebar()" class="md:hidden mr-4 p-2 glass-panel text-gray-500"><i data-lucide="menu"></i></button>
                     <h1 id="view-title" class="cyber-header text-2xl md:text-3xl">Dashboard</h1>
                 </div>
                 <div class="text-right hidden sm:block">
                     <p id="current-date-display" class="text-neon-green font-bold text-sm md:text-base"></p>
-                    <p id="active-group-label" class="text-[10px] md:text-xs text-gray-400"></p>
+                    <p id="active-group-label" class="text-[10px] md:text-xs text-gray-500 uppercase tracking-widest"></p>
                 </div>
             </header>
 
@@ -218,16 +235,16 @@
                 <section id="view-dashboard" class="app-view">
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
                         <div class="glass-panel p-6 border-l-4 border-l-blue-500">
-                            <p class="text-gray-400 uppercase text-xs text-blue-400">Total Members</p>
+                            <p class="text-gray-500 uppercase text-xs">Total Members</p>
                             <h3 id="stat-total-members" class="text-4xl font-bold mt-2">0</h3>
                         </div>
                         <div class="glass-panel p-6 border-l-4 border-l-green-500">
-                            <p class="text-gray-400 uppercase text-xs text-green-400">Present Today</p>
-                            <h3 id="stat-present-today" class="text-4xl font-bold mt-2 text-green-400">0</h3>
+                            <p class="text-gray-500 uppercase text-xs">Present Today</p>
+                            <h3 id="stat-present-today" class="text-4xl font-bold mt-2 text-green-500">0</h3>
                         </div>
                         <div class="glass-panel p-6 border-l-4 border-l-red-500">
-                            <p class="text-gray-400 uppercase text-xs text-red-400">Absent Today</p>
-                            <h3 id="stat-absent-today" class="text-4xl font-bold mt-2 text-red-400">0</h3>
+                            <p class="text-gray-500 uppercase text-xs">Absent Today</p>
+                            <h3 id="stat-absent-today" class="text-4xl font-bold mt-2 text-red-500">0</h3>
                         </div>
                     </div>
                 </section>
@@ -235,7 +252,7 @@
                 <!-- Groups View -->
                 <section id="view-groups" class="app-view hide">
                     <div class="glass-panel p-6 max-w-2xl mb-8">
-                        <h3 class="cyber-header mb-6">Create New Messenger Box</h3>
+                        <h3 class="cyber-header mb-6 text-sm">Create New Messenger Box</h3>
                         <div class="flex flex-col sm:flex-row gap-4">
                             <input type="text" id="new-group-name" placeholder="Box Name..." class="flex-1 p-3 rounded">
                             <button id="add-group-btn" class="btn-cyber px-8 py-3 rounded">CREATE</button>
@@ -247,7 +264,7 @@
                 <!-- Members View -->
                 <section id="view-members" class="app-view hide">
                     <div class="glass-panel p-6 mb-8">
-                        <h3 class="cyber-header mb-4">Add Member to <span class="active-box-name"></span></h3>
+                        <h3 class="cyber-header mb-4 text-sm">Add Member to <span class="active-box-name"></span></h3>
                         <div class="flex flex-col sm:flex-row gap-4">
                             <input type="text" id="member-name-input" placeholder="Full Name" class="flex-1 p-3 rounded">
                             <button id="add-member-btn" class="btn-cyber px-8 py-3 rounded uppercase">Add</button>
@@ -255,7 +272,7 @@
                     </div>
                     <div class="glass-panel overflow-x-auto">
                         <table class="w-full text-left min-w-[500px]">
-                            <thead class="bg-black/40 text-gray-400 uppercase text-xs">
+                            <thead class="bg-gray-500/10 text-gray-500 uppercase text-xs">
                                 <tr>
                                     <th class="p-4 w-16">SN</th>
                                     <th class="p-4">Member Name</th>
@@ -269,12 +286,19 @@
 
                 <!-- Attendance View -->
                 <section id="view-attendance" class="app-view hide">
-                    <div class="glass-panel p-6 mb-8 flex flex-col sm:flex-row gap-6 items-center sm:items-end">
-                        <div class="w-full sm:w-auto">
-                            <label class="block text-gray-500 text-xs mb-2 uppercase">Select Date</label>
-                            <input type="date" id="attendance-date" class="p-3 rounded w-full">
+                    <div class="glass-panel p-6 mb-8 flex flex-col md:flex-row gap-4 items-center md:items-end">
+                        <div class="w-full md:w-48">
+                            <label class="block text-gray-500 text-xs mb-1 uppercase">Date</label>
+                            <input type="date" id="attendance-date" class="p-2 rounded w-full text-sm">
                         </div>
-                        <button id="save-attendance-btn" class="btn-cyber px-10 py-3 rounded w-full sm:w-auto">SAVE DATA</button>
+                        <div class="flex-1 w-full relative">
+                            <label class="block text-gray-500 text-xs mb-1 uppercase">Search Member</label>
+                            <div class="relative">
+                                <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500"></i>
+                                <input type="text" id="attendance-search" placeholder="Type name to filter..." class="p-2 pl-10 rounded w-full text-sm">
+                            </div>
+                        </div>
+                        <button id="save-attendance-btn" class="btn-cyber px-8 py-2 rounded w-full md:w-auto text-sm">SAVE CHANGES</button>
                     </div>
                     <div class="glass-panel overflow-hidden">
                         <table class="w-full text-left">
@@ -286,13 +310,13 @@
                 <!-- Reports View -->
                 <section id="view-reports" class="app-view hide">
                     <div class="flex justify-end mb-4">
-                        <button onclick="downloadPDF()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center gap-2 text-sm">
+                        <button onclick="downloadPDF()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center gap-2 text-xs">
                             <i data-lucide="download" class="w-4 h-4"></i> Download PDF Report
                         </button>
                     </div>
                     <div class="glass-panel overflow-x-auto">
                         <table class="w-full text-left min-w-[600px]" id="reports-table">
-                            <thead class="bg-black/40 text-gray-400 uppercase text-xs">
+                            <thead class="bg-gray-500/10 text-gray-500 uppercase text-xs">
                                 <tr>
                                     <th class="p-4 w-16">SN</th>
                                     <th class="p-4">Name</th>
@@ -309,7 +333,6 @@
                 <!-- Settings View -->
                 <section id="view-settings" class="app-view hide">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <!-- Security Settings -->
                         <div class="glass-panel p-6">
                             <h3 class="cyber-header mb-6 text-sm">Security Credentials</h3>
                             <div class="space-y-4">
@@ -324,12 +347,10 @@
                                 <button id="update-auth-btn" class="btn-cyber w-full py-2 rounded text-xs tracking-widest mt-2">UPDATE CLOUD AUTH</button>
                             </div>
                         </div>
-
-                        <!-- Reset Settings -->
                         <div class="glass-panel p-6 border-l-4 border-l-red-600">
-                            <h3 class="text-lg font-bold text-red-500 mb-4 uppercase">System Master Reset</h3>
-                            <p class="text-xs text-gray-400 mb-6">This will wipe all data from the Firebase cloud permanently. Proceed with extreme caution.</p>
-                            <button id="reset-system-btn" class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded w-full tracking-widest uppercase text-xs">Erase All Cloud Data</button>
+                            <h3 class="text-lg font-bold text-red-500 mb-4 uppercase">Master Reset</h3>
+                            <p class="text-xs text-gray-400 mb-6">Wipe all data from the Firebase cloud permanently. This cannot be undone.</p>
+                            <button id="reset-system-btn" class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded w-full tracking-widest uppercase text-xs">Erase Cloud Data</button>
                         </div>
                     </div>
                 </section>
@@ -356,13 +377,28 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // DEFAULT STATE (Used if cloud is empty)
         let appState = {
             groups: [],
             members: {},
             attendance: {},
             activeGroup: '',
-            auth: { user: 'admin', pass: '12345' } // Default login
+            auth: { user: 'admin', pass: '12345' }
+        };
+
+        // --- THEME LOGIC ---
+        window.toggleTheme = () => {
+            const body = document.body;
+            const icon = document.getElementById('theme-icon');
+            if (body.classList.contains('dark')) {
+                body.classList.replace('dark', 'light');
+                icon.setAttribute('data-lucide', 'sun');
+                localStorage.setItem('acs_theme', 'light');
+            } else {
+                body.classList.replace('light', 'dark');
+                icon.setAttribute('data-lucide', 'moon');
+                localStorage.setItem('acs_theme', 'dark');
+            }
+            lucide.createIcons();
         };
 
         // --- PDF DOWNLOADER ---
@@ -375,8 +411,8 @@
             doc.setFontSize(18);
             doc.text(title, 14, 20);
             doc.setFontSize(10);
-            doc.text(`Generated on: ${dateStr}`, 14, 28);
-            doc.text(`Designed by Albert Virelian with love for Team ACS`, 14, 33);
+            doc.text(`Generated: ${dateStr}`, 14, 28);
+            doc.text(`Designed by Albert Virelian | Love for Team ACS`, 14, 33);
 
             const members = appState.members[appState.activeGroup] || [];
             const attData = appState.attendance[appState.activeGroup] || {};
@@ -384,9 +420,7 @@
 
             const tableData = members.map((m, i) => {
                 let p = 0, a = 0;
-                dates.forEach(d => {
-                    if (attData[d][m.id] === 'present') p++; else a++;
-                });
+                dates.forEach(d => { if (attData[d][m.id] === 'present') p++; else a++; });
                 const total = p + a;
                 const perc = total > 0 ? ((p / total) * 100).toFixed(0) : 0;
                 return [i + 1, m.name, p, a, `${perc}%`];
@@ -399,25 +433,30 @@
                 theme: 'grid',
                 headStyles: { fillColor: [0, 255, 65], textColor: [0, 0, 0] }
             });
-
-            doc.save(`Attendance_${appState.activeGroup}_${dateStr}.pdf`);
+            doc.save(`ACS_${appState.activeGroup}_${dateStr}.pdf`);
         };
 
-        // --- AUTH & INITIALIZATION ---
+        // --- INITIALIZATION ---
         window.addEventListener('load', () => {
+            // Restore theme
+            const savedTheme = localStorage.getItem('acs_theme') || 'dark';
+            document.body.className = `${savedTheme} flex min-h-screen`;
+            document.getElementById('theme-icon').setAttribute('data-lucide', savedTheme === 'dark' ? 'moon' : 'sun');
+            
             lucide.createIcons();
             document.getElementById('attendance-date').valueAsDate = new Date();
             updateClock();
             setInterval(updateClock, 1000);
-            startSync(); // Sync first to get cloud credentials
+            startSync();
         });
 
-        // Login Submit
+        // Search in attendance
+        document.getElementById('attendance-search').oninput = () => renderAttendance();
+
         document.getElementById('login-submit-btn').onclick = () => {
             const u = document.getElementById('username').value;
             const p = document.getElementById('password').value;
             const cloudAuth = appState.auth || { user: 'admin', pass: '12345' };
-
             if (u === cloudAuth.user && p === cloudAuth.pass) {
                 sessionStorage.setItem('acs_authorized', 'true');
                 showAppUI();
@@ -437,23 +476,16 @@
             location.reload();
         };
 
-        // Update Authentication from Settings
         document.getElementById('update-auth-btn').onclick = () => {
             const newU = document.getElementById('settings-username').value.trim();
             const newP = document.getElementById('settings-password').value.trim();
-            
-            if (newU && newP) {
-                if(confirm("Confirm: Update cloud login credentials?")){
-                    appState.auth = { user: newU, pass: newP };
-                    commit();
-                    alert("Credentials updated! Use these for your next login.");
-                }
-            } else {
-                alert("Please enter both a username and a password.");
+            if (newU && newP && confirm("Confirm: Update cloud credentials?")) {
+                appState.auth = { user: newU, pass: newP };
+                commit();
+                alert("Updated!");
             }
         };
 
-        // --- DATABASE SYNC ---
         function startSync() {
             const dataRef = ref(db, 'master_data');
             onValue(dataRef, (snapshot) => {
@@ -464,32 +496,16 @@
                     if(!appState.members) appState.members = {};
                     if(!appState.attendance) appState.attendance = {};
                     if(!appState.auth) appState.auth = { user: 'admin', pass: '12345' };
-                    
-                    if (!appState.activeGroup && appState.groups.length > 0) {
-                        appState.activeGroup = appState.groups[0];
-                    }
+                    if (!appState.activeGroup && appState.groups.length > 0) appState.activeGroup = appState.groups[0];
                 }
-                
-                // If already logged in, update UI
-                if (sessionStorage.getItem('acs_authorized')) {
-                    showAppUI();
-                }
-                
-                // Fill settings inputs
+                if (sessionStorage.getItem('acs_authorized')) showAppUI();
                 document.getElementById('settings-username').value = appState.auth.user;
                 document.getElementById('settings-password').value = appState.auth.pass;
-
-            }, (error) => {
-                console.error(error);
-                document.getElementById('db-error').classList.remove('hide');
             });
         }
 
-        function commit() {
-            set(ref(db, 'master_data'), appState);
-        }
+        function commit() { set(ref(db, 'master_data'), appState); }
 
-        // --- UI REFRESH ---
         function refreshUI() {
             renderGroupSelect();
             renderGroupsView();
@@ -497,9 +513,8 @@
             renderAttendance();
             renderReports();
             renderDashboard();
-
             document.querySelectorAll('.active-box-name').forEach(el => el.textContent = appState.activeGroup || '---');
-            document.getElementById('active-group-label').textContent = appState.activeGroup ? `BOX: ${appState.activeGroup}` : 'NO BOX SELECTED';
+            document.getElementById('active-group-label').textContent = appState.activeGroup ? `BOX: ${appState.activeGroup}` : 'NO BOX';
             lucide.createIcons();
         }
 
@@ -510,18 +525,13 @@
                 return;
             }
             select.innerHTML = appState.groups.map(g => `<option value="${g}" ${g === appState.activeGroup ? 'selected' : ''}>${g}</option>`).join('');
-            select.onchange = (e) => {
-                appState.activeGroup = e.target.value;
-                commit();
-            };
+            select.onchange = (e) => { appState.activeGroup = e.target.value; commit(); };
         }
 
-        // --- GROUP ACTIONS ---
         document.getElementById('add-group-btn').onclick = () => {
             const name = document.getElementById('new-group-name').value.trim();
             if (name && !appState.groups.includes(name)) {
                 appState.groups.push(name);
-                if(!appState.members) appState.members = {};
                 appState.members[name] = [];
                 appState.activeGroup = name;
                 document.getElementById('new-group-name').value = '';
@@ -530,10 +540,10 @@
         };
 
         window.deleteGroup = (name) => {
-            if (confirm(`Warning: Are you sure you want to delete "${name}"?`)) {
+            if (confirm(`Delete "${name}"?`)) {
                 appState.groups = appState.groups.filter(g => g !== name);
-                if(appState.members) delete appState.members[name];
-                if(appState.attendance) delete appState.attendance[name];
+                delete appState.members[name];
+                delete appState.attendance[name];
                 if (appState.activeGroup === name) appState.activeGroup = appState.groups[0] || '';
                 commit();
             }
@@ -542,16 +552,16 @@
         function renderGroupsView() {
             const list = document.getElementById('groups-list');
             if (!appState.groups || appState.groups.length === 0) {
-                list.innerHTML = '<div class="col-span-full text-center p-8 text-gray-600">No messenger boxes created yet.</div>';
+                list.innerHTML = '<div class="col-span-full text-center p-8 text-gray-500">Empty</div>';
                 return;
             }
             list.innerHTML = appState.groups.map(g => `
-                <div class="glass-panel p-6 border-t-2 ${g === appState.activeGroup ? 'border-neon-green' : 'border-gray-700'}">
+                <div class="glass-panel p-6 border-t-2 ${g === appState.activeGroup ? 'border-neon-green' : 'border-gray-500/30'}">
                     <div class="flex justify-between items-center mb-4">
                         <h4 class="font-bold text-lg">${g}</h4>
-                        <button onclick="deleteGroup('${g}')" class="text-red-500 hover:text-red-400 p-1"><i data-lucide="trash-2" class="w-5 h-5"></i></button>
+                        <button onclick="deleteGroup('${g}')" class="text-red-500 p-1"><i data-lucide="trash-2" class="w-5 h-5"></i></button>
                     </div>
-                    <button onclick="selectGroup('${g}')" class="w-full py-2 rounded text-xs font-bold uppercase ${g === appState.activeGroup ? 'bg-neon-green text-black' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'} transition">
+                    <button onclick="selectGroup('${g}')" class="w-full py-2 rounded text-xs font-bold uppercase ${g === appState.activeGroup ? 'bg-neon-green text-black' : 'bg-gray-500/20 text-gray-500 hover:bg-gray-500/30'}">
                         ${g === appState.activeGroup ? 'ACTIVE' : 'ACTIVATE'}
                     </button>
                 </div>
@@ -559,7 +569,6 @@
             window.selectGroup = (g) => { appState.activeGroup = g; commit(); };
         }
 
-        // --- MEMBER ACTIONS ---
         document.getElementById('add-member-btn').onclick = () => {
             const name = document.getElementById('member-name-input').value.trim();
             if (name && appState.activeGroup) {
@@ -571,7 +580,7 @@
         };
 
         window.deleteMember = (id) => {
-            if(confirm("Delete this member?")){
+            if(confirm("Delete?")){
                 appState.members[appState.activeGroup] = appState.members[appState.activeGroup].filter(m => m.id !== id);
                 commit();
             }
@@ -579,53 +588,49 @@
 
         function renderMembers() {
             const body = document.getElementById('members-table-body');
-            const members = (appState.members && appState.members[appState.activeGroup]) ? appState.members[appState.activeGroup] : [];
+            const members = appState.members[appState.activeGroup] || [];
             if (members.length === 0) {
-                body.innerHTML = '<tr><td colspan="3" class="p-8 text-center text-gray-600 text-sm">No members in this box.</td></tr>';
+                body.innerHTML = '<tr><td colspan="3" class="p-8 text-center text-gray-500">Empty</td></tr>';
                 return;
             }
             body.innerHTML = members.map((m, i) => `
-                <tr class="border-b border-gray-800 hover:bg-white/5 transition">
+                <tr class="border-b border-gray-500/10 hover:bg-gray-500/5 transition">
                     <td class="p-4 text-gray-500 font-mono text-xs">${i + 1}</td>
                     <td class="p-4 text-sm">${m.name}</td>
                     <td class="p-4 text-right">
-                        <button onclick="deleteMember(${m.id})" class="text-red-500 hover:text-red-400 p-2"><i data-lucide="user-minus" class="w-4 h-4"></i></button>
+                        <button onclick="deleteMember(${m.id})" class="text-red-500 p-2"><i data-lucide="user-minus" class="w-4 h-4"></i></button>
                     </td>
                 </tr>
             `).join('');
         }
 
-        // --- ATTENDANCE ACTIONS ---
         document.getElementById('save-attendance-btn').onclick = () => {
             const date = document.getElementById('attendance-date').value;
             if (!appState.activeGroup) return;
-            
             const records = {};
-            document.querySelectorAll('.att-check').forEach(cb => {
-                records[cb.dataset.id] = cb.checked ? 'present' : 'absent';
-            });
-            
-            if (!appState.attendance) appState.attendance = {};
+            document.querySelectorAll('.att-check').forEach(cb => { records[cb.dataset.id] = cb.checked ? 'present' : 'absent'; });
             if (!appState.attendance[appState.activeGroup]) appState.attendance[appState.activeGroup] = {};
-            
             appState.attendance[appState.activeGroup][date] = records;
             commit();
-            alert("Attendance synced to cloud.");
+            alert("Changes Synced!");
         };
 
         function renderAttendance() {
             const body = document.getElementById('attendance-table-body');
             const date = document.getElementById('attendance-date').value;
-            const members = (appState.members && appState.members[appState.activeGroup]) ? appState.members[appState.activeGroup] : [];
-            const dayData = (appState.attendance && appState.attendance[appState.activeGroup]) ? (appState.attendance[appState.activeGroup][date] || {}) : {};
+            const search = document.getElementById('attendance-search').value.toLowerCase();
+            const members = appState.members[appState.activeGroup] || [];
+            const dayData = (appState.attendance[appState.activeGroup] || {})[date] || {};
 
-            if (members.length === 0) {
-                body.innerHTML = '<tr><td class="p-8 text-center text-gray-600 text-sm">No members found.</td></tr>';
+            const filtered = members.filter(m => m.name.toLowerCase().includes(search));
+
+            if (filtered.length === 0) {
+                body.innerHTML = '<tr><td class="p-8 text-center text-gray-500">No matches found.</td></tr>';
                 return;
             }
 
-            body.innerHTML = members.map((m, i) => `
-                <tr class="border-b border-gray-800 hover:bg-white/5 transition">
+            body.innerHTML = filtered.map((m, i) => `
+                <tr class="border-b border-gray-500/10 hover:bg-gray-500/5 transition">
                     <td class="p-4 w-16 text-gray-500 font-mono text-xs">${i + 1}</td>
                     <td class="p-4 font-medium text-sm">${m.name}</td>
                     <td class="p-4 w-24 text-center">
@@ -637,28 +642,24 @@
 
         function renderReports() {
             const body = document.getElementById('reports-table-body');
-            const members = (appState.members && appState.members[appState.activeGroup]) ? appState.members[appState.activeGroup] : [];
-            const attData = (appState.attendance && appState.attendance[appState.activeGroup]) ? appState.attendance[appState.activeGroup] : {};
+            const members = appState.members[appState.activeGroup] || [];
+            const attData = appState.attendance[appState.activeGroup] || {};
             const dates = Object.keys(attData);
-
             if (members.length === 0) {
-                body.innerHTML = '<tr><td colspan="5" class="p-8 text-center text-gray-600 text-sm">No report data.</td></tr>';
+                body.innerHTML = '<tr><td colspan="5" class="p-8 text-center text-gray-500">Empty</td></tr>';
                 return;
             }
-
             body.innerHTML = members.map((m, i) => {
                 let p = 0, a = 0;
-                dates.forEach(d => {
-                    if (attData[d][m.id] === 'present') p++; else a++;
-                });
+                dates.forEach(d => { if (attData[d][m.id] === 'present') p++; else a++; });
                 const total = p + a;
                 const perc = total > 0 ? ((p / total) * 100).toFixed(0) : 0;
                 return `
-                    <tr class="border-b border-gray-800">
+                    <tr class="border-b border-gray-500/10">
                         <td class="p-4 text-gray-500 font-mono text-xs">${i + 1}</td>
-                        <td class="p-4 font-bold text-gray-200 text-sm">${m.name}</td>
-                        <td class="p-4 text-center text-green-400 font-bold text-sm">${p}</td>
-                        <td class="p-4 text-center text-red-400 font-bold text-sm">${a}</td>
+                        <td class="p-4 font-bold text-sm">${m.name}</td>
+                        <td class="p-4 text-center text-green-500 font-bold text-sm">${p}</td>
+                        <td class="p-4 text-center text-red-500 font-bold text-sm">${a}</td>
                         <td class="p-4 text-center">
                             <span class="px-2 py-1 rounded text-[10px] font-bold ${perc > 75 ? 'bg-green-500/20 text-green-500' : 'bg-yellow-500/20 text-yellow-500'}">
                                 ${perc}%
@@ -670,18 +671,16 @@
         }
 
         function renderDashboard() {
-            const members = (appState.members && appState.members[appState.activeGroup]) ? appState.members[appState.activeGroup] : [];
+            const members = appState.members[appState.activeGroup] || [];
             const today = new Date().toISOString().split('T')[0];
-            const todayAtt = (appState.attendance && appState.attendance[appState.activeGroup]) ? (appState.attendance[appState.activeGroup][today] || {}) : {};
+            const todayAtt = (appState.attendance[appState.activeGroup] || {})[today] || {};
             let present = 0;
             Object.values(todayAtt).forEach(v => { if (v === 'present') present++; });
-
             document.getElementById('stat-total-members').textContent = members.length;
             document.getElementById('stat-present-today').textContent = present;
             document.getElementById('stat-absent-today').textContent = Math.max(0, members.length - present);
         }
 
-        // --- UTILS ---
         window.showView = (id) => {
             document.querySelectorAll('.app-view').forEach(v => v.classList.add('hide'));
             document.querySelectorAll('.nav-item').forEach(v => v.classList.remove('active'));
@@ -703,10 +702,8 @@
         }
 
         document.getElementById('reset-system-btn').onclick = () => {
-            if (confirm("MASTER RESET: Wipe all cloud data?")) {
-                remove(ref(db, 'master_data')).then(() => {
-                    location.reload();
-                });
+            if (confirm("MASTER RESET: Clear everything?")) {
+                remove(ref(db, 'master_data')).then(() => location.reload());
             }
         };
     </script>
